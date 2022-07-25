@@ -1,35 +1,54 @@
-use rand::Rng;
 use std::collections::HashSet;
+use std::env;
+use std::process;
 
-type WallMap = Vec<Vec<bool>>;
+use rand::Rng;
+
+/*-------------------------------------*/
 
 const IS_DEBUG_MODE: usize = 0;
 
-fn debug_print<T: std::fmt::Debug>(t: &T) {
-    if (IS_DEBUG_MODE != 0) {
-        println!("{:?}", t);
+/*-------------------------------------*/
+
+struct Options {
+    height: usize,
+    width: usize,
+}
+
+impl Options {
+    fn new() -> Options {
+        let args: Vec<String> = env::args().skip(1).collect();
+        if (args.len() != 2) {
+            print_usage();
+            process::exit(1);
+        }
+        let height: usize = args[0].parse().unwrap_or_else(|_| {
+            print_usage();
+            process::exit(1);
+        });
+        let width: usize = args[1].parse().unwrap_or_else(|_| {
+            print_usage();
+            process::exit(1);
+        });
+        if (width < 3) {
+            println!("`width >= 3` shall be met.");
+            process::exit(1);
+        }
+        if (height < 3) {
+            println!("`height >= 3` shall be met.");
+            process::exit(1);
+        }
+        Options { height, width }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
+fn print_usage() {
+    println!("Usage: cargo run <height> <width>");
 }
 
-#[derive(Debug, Eq, Hash, PartialEq, Clone, Copy)]
-struct Point {
-    x: usize,
-    y: usize,
-}
+/*-------------------------------------*/
 
-impl Point {
-    fn new(x: usize, y: usize) -> Point {
-        Point { x, y }
-    }
-}
+type WallMap = Vec<Vec<bool>>;
 
 fn print_map(m: &WallMap) {
     for i in 0..m.len() {
@@ -56,6 +75,38 @@ fn print_map_csv(m: &WallMap) {
             }
         }
         println!();
+    }
+}
+
+/*-------------------------------------*/
+
+#[derive(Debug, Clone, Copy)]
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+/*-------------------------------------*/
+
+#[derive(Debug, Eq, Hash, PartialEq, Clone, Copy)]
+struct Point {
+    x: usize,
+    y: usize,
+}
+
+impl Point {
+    fn new(x: usize, y: usize) -> Point {
+        Point { x, y }
+    }
+}
+
+/*-------------------------------------*/
+
+fn debug_print<T: std::fmt::Debug>(t: &T) {
+    if (IS_DEBUG_MODE != 0) {
+        println!("{:?}", t);
     }
 }
 
@@ -104,9 +155,12 @@ fn is_digable(p: &Point, d: &Direction, m: &WallMap) -> bool {
     (wall_count == 3)
 }
 
+/*-------------------------------------*/
+
 fn main() {
-    let h = 10; //height
-    let w = 20; //width
+    let options = Options::new();
+    let h = options.height;
+    let w = options.width;
 
     //contains information about if or not each position is wall
     //Initially, all of the positions are walls.
@@ -166,3 +220,5 @@ fn main() {
     println!();
     print_map_csv(&m);
 }
+
+/*-------------------------------------*/
